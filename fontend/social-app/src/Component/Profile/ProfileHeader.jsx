@@ -1,0 +1,97 @@
+import { Avatar, AvatarGroup, Button, Box, Typography, Stack, CircularProgress, Dialog, Container } from "@mui/material";
+import { useState, useContext, useEffect, useCallback } from "react";
+import { AuthContext } from "../../Contexts/AuthContext";
+import { isFollowing, followUser } from "../../Api/Follow/Follow";
+
+const ProfileHeader = ({ userProfile }) => {
+    const { user } = useContext(AuthContext);
+    const [isFollowingUser, setIsFollowingUser] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+
+    useEffect(() => {
+        const checkFollowing = async () => {
+            if (userProfile?.user?.id) {
+                try {
+                    const response = await isFollowing(userProfile.user.id);
+                    setIsFollowingUser(response.data);
+                } catch (error) {
+                    console.error("Lỗi khi kiểm tra follow:", error);
+                }
+            }
+        };
+
+        checkFollowing();
+    }, [userProfile]);
+
+    const handleFollow = useCallback(async () => {
+        setIsUpdating(true);
+        try {
+            const response = await followUser(userProfile.user.id);
+            setIsFollowingUser(response.data);
+        } catch (error) {
+            console.error("Lỗi khi follow:", error);
+        } finally {
+            setIsUpdating(false);
+        }
+    }, [userProfile]);
+
+    if (!userProfile) {
+        return <CircularProgress />;
+    }
+
+    const visitingOwnProfileAndAuth = userProfile.user.id === user.id;
+    const visitingAnotherProfileAndAuth = userProfile.user.id !== user.id;
+
+    return (
+        <Box sx={{ py: 4, display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: "center", width: "100%" }}>
+            <Container
+                maxWidth="md"
+                disableGutters
+                sx={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "0 10rem" }}
+            >
+                <AvatarGroup>
+                    <Avatar
+                        src={userProfile?.profilePicURL || "https://fakeimg.pl/440x320/?text=Image1"}
+                        alt="User Profile"
+                        sx={{ width: 150, height: 150 }}
+                    />
+                </AvatarGroup>
+                <Stack spacing={2} sx={{ width: "100%", maxWidth: 400 }}>
+                    <Box display="flex" alignItems="center" gap={2}>
+                        <Typography variant="h6">{userProfile?.firstName} {userProfile?.lastName}</Typography>
+                        {visitingOwnProfileAndAuth && (
+                            <Button variant="outlined" size="small" onClick={() => setIsOpen(true)}>
+                                Edit Profile
+                            </Button>
+                        )}
+                        {visitingAnotherProfileAndAuth && (
+                            <Button
+                                variant="contained"
+                                color={isFollowingUser ? "secondary" : "primary"}
+                                size="small"
+                                disabled={isUpdating}
+                                onClick={handleFollow}
+                            >
+                                {isUpdating ? <CircularProgress size={20} /> : isFollowingUser ? "Unfollow" : "Follow"}
+                            </Button>
+                        )}
+                    </Box>
+                    <Box display="flex" gap={2}>
+                        <Button sx={{ color: 'black' }}><Typography variant="body2"><strong>{userProfile?.postCount || 0}</strong> Posts</Typography></Button>
+                        <Button sx={{ color: 'black' }}><Typography variant="body2"><strong>{userProfile?.followerCount || 0}</strong> Followers</Typography></Button>
+                        <Button sx={{ color: 'black' }}><Typography variant="body2"><strong>{userProfile?.followingCount || 0}</strong> Following</Typography></Button>
+                    </Box>
+                    <Typography variant="body1" fontWeight="bold" padding="0px 8px" margin="0">
+                        {userProfile?.user?.firstName} {userProfile?.user?.lastName}
+                    </Typography>
+                </Stack>
+                <Dialog open={isOpen} onClose={() => setIsOpen(false)}>
+                    <Box p={3}>Edit Profile Placeholder</Box>
+                </Dialog>
+            </Container>
+        </Box>
+    );
+};
+
+export default ProfileHeader;

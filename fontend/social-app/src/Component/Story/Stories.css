@@ -1,0 +1,42 @@
+.rainbow-border {
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
+    background-size: 400% 400%;
+    /* animation: rainbowAnimation 3s linear infinite; */
+    /* padding: 20px; */
+}
+
+.stories-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.swiper-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+
+
+.swiper-button-prev::hover {
+    cursor: pointer;
+    background-color: transparent;
+}
+.swiper-button-next::hover {
+   cursor: pointer;
+    background-color: transparent;
+}
+
+.swiper-button-prev::after,
+.swiper-button-next::after {
+    display: none;
+}
