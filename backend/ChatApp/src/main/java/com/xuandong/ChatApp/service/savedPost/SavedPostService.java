@@ -1,8 +1,9 @@
 package com.xuandong.ChatApp.service.savedPost;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
+import com.xuandong.ChatApp.dto.response.savedPost.PreviewSavedPostImageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,7 +47,31 @@ public class SavedPostService {
 		return savedPostRepository.findByUser(user).orElse(null);
 	}
 
-	public Page<PostResponse> getSavedPosts(int currentPage) {
+
+	public PreviewSavedPostImageResponse getPreviewSavedPost() {
+		SavedPost savedPost = getUserSavedPost();
+		if (savedPost == null) {
+			return null;
+		}
+		Pageable pageable = PageRequest.of(0, 4);
+		Page<SavedPostDetail> savedPostDetails = savedPostDetailRepository.findBySavedPost(savedPost, pageable);
+
+		return PreviewSavedPostImageResponse.builder()
+				.name("All-Posts")
+				.images(savedPostDetails.getContent().stream()
+						.map(savedPostDetail ->
+								savedPostDetail.getPost().getPostImages().isEmpty()
+										? null
+										: savedPostDetail.getPost().getPostImages().getFirst().getUrlImage()
+						)
+						.filter(Objects::nonNull) // Lọc bỏ các giá trị null
+						.toList()
+				)
+				.build();
+	}
+
+
+	public Page<PostResponse> getSavedPost(int currentPage) {
 		SavedPost savedPost = getUserSavedPost();
 		if (savedPost == null) {
 			return Page.empty();
@@ -67,12 +92,9 @@ public class SavedPostService {
 		}
 		SavedPostDetail savedPostDetail = savedPostDetailRepository.findBySavedPostAndPost(savedPost, post)
 				.orElse(null);
-		if (savedPostDetail == null) {
-			return false;
-		}
-		return true;
+        return savedPostDetail != null;
 
-	}
+    }
 
 //	public SavedPost getSavedPostByPost(Post post) {
 //		String email= SecurityContextHolder.getContext().getAuthentication().getName();
@@ -114,31 +136,35 @@ public class SavedPostService {
 	@Transactional
 	public void deleteSavedPost(String postId) {
 		String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
 		User user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new EntityNotFoundException("User not found by email: " + email));
+
 		Post post = postRepository.findById(postId)
 				.orElseThrow(() -> new EntityNotFoundException("Post not found by id: " + postId));
 
 		SavedPost savedPost = savedPostRepository.findByUser(user)
 				.orElseThrow(() -> new EntityNotFoundException("SavedPost not found"));
 
-		// xóa trong collection nếu có
-		List<Collection> collections = collectionRepository.findBySavedPost(savedPost);
-		if (collections.isEmpty()) {
-			savedPostRepository.delete(savedPost);
-			return;
+		SavedPostDetail savedPostDetail = savedPostDetailRepository.findBySavedPostAndPost(savedPost, post)
+				.orElseThrow(() -> new EntityNotFoundException("SavedPostDetail not found"));
+
+		// Lấy danh sách collections chứa savedPostDetail
+		List<CollectionDetail> collectionDetails = collectionDetailRepository.findBySavedPostDetail(savedPostDetail);
+
+		// Nếu savedPostDetail tồn tại trong collection nào đó, xóa nó khỏi collection trước
+		if (!collectionDetails.isEmpty()) {
+			collectionDetailRepository.deleteAll(collectionDetails);
 		}
 
-		SavedPostDetail savedPostDetail = savedPostDetailRepository.findBySavedPostAndPost(savedPost, post)
-				.orElseThrow(() -> new EntityNotFoundException("Not found SavePostDetail"));
+		// Xóa savedPostDetail
+		savedPostDetailRepository.delete(savedPostDetail);
 
-		collections.forEach(collection -> {
-			CollectionDetail collectionDetail = collectionDetailRepository
-					.findByCollectionAndSavedPostDetail(collection, savedPostDetail).orElseThrow(
-							() -> new EntityNotFoundException("Collection not found with id: " + collection.getId()));
-			collectionDetailRepository.delete(collectionDetail);
-		});
-
+		// Kiểm tra nếu savedPost không còn chi tiết nào, thì xóa luôn savedPost
+		if (!savedPostDetailRepository.existsBySavedPost(savedPost)) {
+			savedPostRepository.delete(savedPost);
+		}
 	}
+
 
 }

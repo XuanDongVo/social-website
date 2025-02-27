@@ -11,6 +11,8 @@ export const AuthProvider = ({ children }) => {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [eventSource, setEventSource] = useState(null); // State để quản lý SSE
+    const [notifications, setNotifications] = useState([]); // Lưu danh sách thông báo
 
     // Khi user thay đổi, lưu vào localStorage
     useEffect(() => {
@@ -20,6 +22,66 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem("user");
         }
     }, [user]);
+
+    // Khởi tạo SSE khi user đăng nhập
+    useEffect(() => {
+        if (user?.id) {
+            let retryCount = 0;
+            const maxRetries = 3;
+
+            const connectSSE = () => {
+                const source = new EventSource(`http://localhost:8080/api/v1/notification/subscribe?id=${user.id}`);
+
+                source.onopen = () => {
+                    retryCount = 0;
+                };
+
+                source.onerror = (error) => {
+                    source.close();
+                    if (retryCount < maxRetries) {
+                        retryCount++;
+                        setTimeout(() => {
+                            connectSSE(); // Thử kết nối lại
+                        }, 2000);
+                    } else {
+                        setEventSource(null);
+                        setNotifications([]); // Reset khi không kết nối được
+                    }
+                };
+
+                // source.onmessage = (event) => {
+                //     try {
+                //         const data = JSON.parse(event.data);
+                //         console.log("Thông báo mới (mặc định):", data);
+                //     } catch (e) {
+                //         console.error("Lỗi parse thông báo mặc định:", e, "Raw data:", event.data);
+                //     }
+                // };
+
+                source.addEventListener("notification", (event) => {
+                    try {
+                        const notification = JSON.parse(event.data);
+                        console.log("📩 Bạn có thông báo mới:", notification);
+                        setNotifications((prev) => [notification, ...prev.slice(0, 49)]);
+                    } catch (e) {
+                        console.error("Lỗi parse JSON từ notification:", e, "Raw data:", event.data);
+                    }
+                });
+
+                setEventSource(source);
+                return source; // Trả về source để cleanup
+            };
+
+            const source = connectSSE();
+
+            return () => {
+                source.close();
+                console.log("Kết nối SSE đã đóng!");
+                setEventSource(null);
+                setNotifications([]); // Reset thông báo
+            };
+        }
+    }, [user?.id]);
 
     const login = async ({ email, password }) => {
         setLoading(true);
@@ -51,13 +113,30 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
+        if (eventSource) {
+            eventSource.close(); // Đóng kết nối SSE
+            setEventSource(null);
+        }
         setUser(null);
+        setNotifications([]); // Xóa danh sách thông báo khi đăng xuất
         localStorage.removeItem("user");
         localStorage.removeItem("accessToken");
     };
 
     return (
-        <AuthContext.Provider value={{ user, setUser, login, register, logout, loading, error, setError }}>
+        <AuthContext.Provider
+            value={{
+                user,
+                setUser,
+                login,
+                register,
+                logout,
+                loading,
+                error,
+                setError,
+                notifications,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );

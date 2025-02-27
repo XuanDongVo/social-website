@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.xuandong.ChatApp.service.notification.NotificationService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -25,14 +26,16 @@ public class FollowService {
 	private final FollowRepository followRepository;
 	private final UserMapper userMapper;
 	private final UserRepository userRepository;
+	private final NotificationService notificationService;
 
-//	public FollowResponse findById(String followId) {
-//		Follow follow = followRepository.findById(followId).orElseThrow(() -> new EntityNotFoundException("Follow not found by id: " + followId));
-//		return new FollowResponse(followId, null)
-//	}
 
 	// danh sách follow của user
-	public List<FollowResponse> getFollowing(User user) {
+	public List<FollowResponse> getFollowing() {
+		String email = SecurityContextHolder.getContext().getAuthentication().getName();
+		User user = userRepository.findByEmail(email)
+				.orElseThrow(() -> new EntityNotFoundException("User not found with email " + email));
+
+
 		List<FollowResponse> followResponses = new ArrayList<>();
 
 		followRepository.findFollowingByUser(user.getId()).forEach(follow -> {
@@ -45,13 +48,16 @@ public class FollowService {
 		return followResponses;
 	}
 
+
 	// danh sách người dùng follow user
 	public List<FollowResponse> getFollower(User user) {
 		List<FollowResponse> followResponses = new ArrayList<>();
 
 		followRepository.findFollowers(user.getId()).forEach(follow -> {
 			FollowResponse followResponse = FollowResponse.builder().followId(follow.getId())
-					.follow(userMapper.toUserResponse(follow.getUser())).build();
+					.follow(userMapper.toUserResponse(follow.getUser()))
+					.isFollowingBack(followRepository.existsByUserAndUserFollowing(user, follow.getUser()))
+					.build();
 
 			followResponses.add(followResponse);
 		});
@@ -89,8 +95,21 @@ public class FollowService {
 	        follow.setUser(self);
 	        follow.setUserFollowing(userToFollow);
 	        followRepository.save(follow);
+			notificationService.sendFollowNotification(self,userToFollow);
+
 	        return true;
 	    }
+	}
+
+	public void deleteFollower(String userId) {
+		String email = SecurityContextHolder.getContext().getAuthentication().getName();
+		User self = userRepository.findByEmail(email)
+				.orElseThrow(() -> new EntityNotFoundException("User not found with email " + email));
+
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new EntityNotFoundException("User not found with id " + userId));
+		Follow follow = followRepository.findByUserAndUserFollowing(user, self).orElseThrow();
+		followRepository.delete(follow);
 	}
 
 }

@@ -1,5 +1,10 @@
 import { api } from "../Api";
 
+export const getPreviewSavedPost = async () => {
+    const response = await api.get("/api/v1/saved-post/preview");
+    return response;
+}
+
 export const savePost = async (postId) => {
     const response = await api.post(`/api/v1/saved-post/save?id=${postId}`);
     return response;

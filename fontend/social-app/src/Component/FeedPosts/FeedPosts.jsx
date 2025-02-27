@@ -92,12 +92,14 @@ const FeedPosts = () => {
                     <Box component="img" src="/illo-confirm-refresh-light.png" sx={{ width: 100, height: 100 }} />
                     <Typography variant="body" align="center" sx={{ mt: 2 }}>
                         🚀 You're all caught up
-
                     </Typography>
                 </Box>
             </>
             )
             }
+
+            {/* Suggest feed post*/}
+
         </Container >
     );
 };

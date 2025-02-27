@@ -1,40 +1,102 @@
 import { Avatar, AvatarGroup, Button, Box, Typography, Stack, CircularProgress, Dialog, Container } from "@mui/material";
 import { useState, useContext, useEffect, useCallback } from "react";
 import { AuthContext } from "../../Contexts/AuthContext";
-import { isFollowing, followUser } from "../../Api/Follow/Follow";
+import { isFollowing, followUser, getFollowing, getFollowers, deleteFollower } from "../../Api/Follow/Follow";
+import UserListModalDialog from "../Dialog/UserListModalDialog";
+
+
 
 const ProfileHeader = ({ userProfile }) => {
     const { user } = useContext(AuthContext);
     const [isFollowingUser, setIsFollowingUser] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const [openFollowers, setOpenFollowers] = useState(false);
+    const [openFollowing, setOpenFollowing] = useState(false);
+    const [followers, setFollowers] = useState([]); // State lưu danh sách Followers
+    const [following, setFollowing] = useState([]); // State lưu danh sách Following
+    const [loadingFollowers, setLoadingFollowers] = useState(false); // State loading cho Followers
+    const [loadingFollowing, setLoadingFollowing] = useState(false); // State loading cho Following
 
-    useEffect(() => {
-        const checkFollowing = async () => {
+
+    const fetchFollowers = useCallback(async () => {
+        setLoadingFollowers(true);
+        try {
             if (userProfile?.user?.id) {
-                try {
-                    const response = await isFollowing(userProfile.user.id);
-                    setIsFollowingUser(response.data);
-                } catch (error) {
-                    console.error("Lỗi khi kiểm tra follow:", error);
-                }
+                const response = await getFollowers();
+                setFollowers(response.data || []);
             }
-        };
+        } catch (error) {
+            console.error("Lỗi khi lấy danh sách Followers:", error);
+        } finally {
+            setLoadingFollowers(false);
+        }
+    }, [userProfile?.user?.id]);
 
-        checkFollowing();
-    }, [userProfile]);
+    const fetchFollowing = useCallback(async () => {
+        setLoadingFollowing(true);
+        try {
+            if (userProfile?.user?.id) {
+                const response = await getFollowing();
+                setFollowing(response.data || []);
+            }
+        } catch (error) {
+            console.error("Lỗi khi lấy danh sách Following:", error);
+        } finally {
+            setLoadingFollowing(false);
+        }
+    }, [userProfile?.user?.id]);
+
+    const checkFollowingStatus = useCallback(async () => {
+        if (userProfile?.user?.id) {
+            try {
+                const response = await isFollowing(userProfile.user.id);
+                setIsFollowingUser(response.data);
+            } catch (error) {
+                console.error("Lỗi khi kiểm tra follow:", error);
+            }
+        }
+    }, [userProfile?.user?.id]);
 
     const handleFollow = useCallback(async () => {
         setIsUpdating(true);
         try {
-            const response = await followUser(userProfile.user.id);
-            setIsFollowingUser(response.data);
+            if (userProfile?.user?.id) {
+                const response = await followUser(userProfile.user.id);
+                setIsFollowingUser(response.data);
+            }
         } catch (error) {
             console.error("Lỗi khi follow:", error);
         } finally {
             setIsUpdating(false);
         }
-    }, [userProfile]);
+    }, [userProfile?.user?.id]);
+
+
+    useEffect(() => {
+        checkFollowingStatus();
+    }, [checkFollowingStatus]);
+
+    const handleOpenFollowers = () => {
+        setOpenFollowers(true);
+        fetchFollowers();
+    };
+
+    const handleOpenFollowing = () => {
+        setOpenFollowing(true);
+        fetchFollowing();
+    };
+
+    const handleRemoveFollower = async (userId) => {
+        await deleteFollower(userId);
+        await fetchFollowers();
+
+    };
+
+    const handleUnfollow = async (userId) => {
+        await followUser(userId);
+        await fetchFollowing();
+    };
 
     if (!userProfile) {
         return <CircularProgress />;
@@ -79,8 +141,20 @@ const ProfileHeader = ({ userProfile }) => {
                     </Box>
                     <Box display="flex" gap={2}>
                         <Button sx={{ color: 'black' }}><Typography variant="body2"><strong>{userProfile?.postCount || 0}</strong> Posts</Typography></Button>
-                        <Button sx={{ color: 'black' }}><Typography variant="body2"><strong>{userProfile?.followerCount || 0}</strong> Followers</Typography></Button>
-                        <Button sx={{ color: 'black' }}><Typography variant="body2"><strong>{userProfile?.followingCount || 0}</strong> Following</Typography></Button>
+                        <Button
+                            sx={{ color: 'black' }}
+                            onClick={handleOpenFollowers} // Mở modal trước, sau đó fetch
+                            disabled={loadingFollowers}
+                        >
+                            {loadingFollowers ? <CircularProgress size={20} /> : <Typography variant="body2"><strong>{userProfile?.followerCount || 0}</strong> Followers</Typography>}
+                        </Button>
+                        <Button
+                            sx={{ color: 'black' }}
+                            onClick={handleOpenFollowing} // Mở modal trước, sau đó fetch
+                            disabled={loadingFollowing}
+                        >
+                            {loadingFollowing ? <CircularProgress size={20} /> : <Typography variant="body2"><strong>{userProfile?.followingCount || 0}</strong> Following</Typography>}
+                        </Button>
                     </Box>
                     <Typography variant="body1" fontWeight="bold" padding="0px 8px" margin="0">
                         {userProfile?.user?.firstName} {userProfile?.user?.lastName}
@@ -90,6 +164,32 @@ const ProfileHeader = ({ userProfile }) => {
                     <Box p={3}>Edit Profile Placeholder</Box>
                 </Dialog>
             </Container>
+
+            <UserListModalDialog
+                open={openFollowers}
+                onClose={() => {
+                    setOpenFollowers(false);
+                    setFollowers([]);
+                }}
+                users={followers}
+                title="Followers"
+                actionButtonText="Remove"
+                onAction={handleRemoveFollower}
+                loading={loadingFollowers}
+            />
+
+            <UserListModalDialog
+                open={openFollowing}
+                onClose={() => {
+                    setOpenFollowing(false);
+                    setFollowing([]);
+                }}
+                users={following}
+                title="Following"
+                actionButtonText="Following"
+                onAction={handleUnfollow}
+                loading={loadingFollowing}
+            />
         </Box>
     );
 };

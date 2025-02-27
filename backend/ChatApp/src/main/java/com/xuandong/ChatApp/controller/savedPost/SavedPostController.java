@@ -1,5 +1,6 @@
 package com.xuandong.ChatApp.controller.savedPost;
 
+import com.xuandong.ChatApp.dto.response.savedPost.PreviewSavedPostImageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,37 +12,43 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.xuandong.ChatApp.dto.response.PostResponse;
-import com.xuandong.ChatApp.entity.Post;
 import com.xuandong.ChatApp.service.savedPost.SavedPostService;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/saved-post")
 @RequiredArgsConstructor
 public class SavedPostController {
-	private final SavedPostService savedPostService;
+    private final SavedPostService savedPostService;
 
-	@GetMapping("/all")
-	public Page<PostResponse> getSavedPosts(@RequestParam("page") int currentPage) {
-		return savedPostService.getSavedPosts(currentPage);
-	}
+    @GetMapping("/preview")
+    public PreviewSavedPostImageResponse getPreviewSavedPost() {
+        return savedPostService.getPreviewSavedPost();
+    }
 
-	@PostMapping("/save")
-	public void savePost(@RequestParam("id") String postId) {
-		try {
-			savedPostService.savePost(postId);
-		} catch (Exception e) {
-			new ResponseStatusException(HttpStatus.CONFLICT, "error");
-		}
-	}
+    @GetMapping("/all")
+    public Page<PostResponse> getSavedPost(@RequestParam("page") int currentPage) {
+        return savedPostService.getSavedPost(currentPage);
+    }
 
-	@DeleteMapping("/delete")
-	public void deletesavedPost(@RequestParam("id") String postId) {
-		try {
-			savedPostService.deleteSavedPost(postId);
-		} catch (Exception e) {
-			new ResponseStatusException(HttpStatus.CONFLICT, "error");
-		}
-	}
+    @PostMapping("/save")
+    public void savePost(@RequestParam("id") String postId) {
+        try {
+            savedPostService.savePost(postId);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error");
+        }
+    }
+
+    @DeleteMapping("/delete")
+    public void deletesavedPost(@RequestParam("id") String postId) {
+        try {
+            savedPostService.deleteSavedPost(postId);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error");
+        }
+    }
 }

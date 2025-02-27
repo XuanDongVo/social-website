@@ -44,11 +44,11 @@ public class PostService {
 		return postRepository.getSelfPosts(userId, pageable).map(post -> postMapper.postMapper(post, user));
 	}
 
-//	public PostResponse findById(String postId, User user) {
-//		Post post = postRepository.findById(postId)
-//				.orElseThrow(() -> new EntityNotFoundException("Not found post by id: " + postId));
-//		return postMapper.postMapper(post, user);
-//	}
+	public PostResponse findById(String postId ) {
+		Post post = postRepository.findById(postId)
+				.orElseThrow(() -> new EntityNotFoundException("Not found post by id: " + postId));
+		return postMapper.postMapper(post, post.getUser());
+	}
 	
 	// newfeed của following
 	public List<PostResponse> getUserFeed(int page) {
@@ -57,7 +57,6 @@ public class PostService {
 	            .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
 	    List<String> postIds = redisService.getNewsfeed(user.getId(), page);
-	   System.out.println(postIds.toArray().toString());
 
 	    if (postIds.isEmpty()) {
 	        return Collections.emptyList(); 
@@ -117,5 +116,7 @@ public class PostService {
 		});
 		postRepository.delete(post);
 	}
+
+
 
 }

@@ -1,6 +1,11 @@
 import { api } from "../Api";
 
 export const likePost = async (postId) => {
-    const response = await api.get(`/api/v1/like/like-post?id=${postId}`);
+    const response = await api.get(`/api/v1/like/like-post/toogle?id=${postId}`);
+    return response;
+}
+
+export const getListLikePost = async (postId) => {
+    const response = await api.get(`/api/v1/like/like-post/list?id=${postId}`);
     return response;
 }

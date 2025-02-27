@@ -1,6 +1,6 @@
 package com.xuandong.ChatApp.dto.request;
 
-import com.xuandong.ChatApp.utils.MessageType;
+import com.xuandong.ChatApp.enums.MessageType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

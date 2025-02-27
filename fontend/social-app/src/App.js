@@ -9,6 +9,9 @@ import PageLayout from "./Layout/PageLayout";
 import SavedPostPage from "./Page/SavedPostPage";
 import SavedPost from "./Component/SavedPost/SavedPost";
 import ProfilePosts from "./Component/Profile/ProfilePosts";
+import CollectionPage from "./Page/CollectionPage"
+import PostDetailPage from "./Page/PostDetailPage";
+import ChatInterfacePage from "./Page/ChatInterfacePage";
 
 function App() {
   return (
@@ -24,7 +27,9 @@ function App() {
               <Route path="saved" element={<SavedPost />} />
             </Route>
             <Route path="/profile/:userId/saved/all-posts" element={<SavedPostPage />} />
-
+            <Route path="/profile/:userId/saved/:collectionName/:collectionId" element={<CollectionPage />} />
+            <Route path="/post/:postId" element={<PostDetailPage />} />
+            <Route path="/chat" element={<ChatInterfacePage />} />
           </Route>
         </Routes>
       </Router>

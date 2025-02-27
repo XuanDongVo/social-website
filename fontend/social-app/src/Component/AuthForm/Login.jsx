@@ -19,7 +19,6 @@ const Login = () => {
 
     const handleSubmit = async () => {
         const response = await login(inputs);
-        console.log(response);
         if (response?.status === 200) {
             navigate("/");
         }

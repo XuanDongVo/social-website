@@ -1,13 +1,11 @@
 package com.xuandong.ChatApp.repository.notification;
 
-import java.util.Optional;
+import com.xuandong.ChatApp.entity.notification.Notification;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.xuandong.ChatApp.entity.Notification;
-import com.xuandong.ChatApp.entity.Post;
-import com.xuandong.ChatApp.entity.User;
+import java.util.Optional;
 
-public interface NotificationRepository extends JpaRepository<Notification, String> {
-	Optional<Notification> findBySenderAndPost(User sender , Post post);
+public interface NotificationRepository  extends JpaRepository<Notification,String> {
+
 }

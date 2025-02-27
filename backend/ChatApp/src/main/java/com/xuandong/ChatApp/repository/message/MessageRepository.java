@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.xuandong.ChatApp.entity.Message;
 import com.xuandong.ChatApp.message.MessageConstants;
-import com.xuandong.ChatApp.utils.MessageState;
+import com.xuandong.ChatApp.enums.MessageState;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
 	@Query(name = MessageConstants.FIND_MESSAGES_BY_CHAT_ID)

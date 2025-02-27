@@ -18,9 +18,9 @@ import com.xuandong.ChatApp.repository.chat.ChatRepository;
 import com.xuandong.ChatApp.repository.message.MessageRepository;
 import com.xuandong.ChatApp.service.file.FileService;
 import com.xuandong.ChatApp.service.notification.NotificationService;
-import com.xuandong.ChatApp.utils.MessageState;
-import com.xuandong.ChatApp.utils.MessageType;
-import com.xuandong.ChatApp.utils.NotificationType;
+import com.xuandong.ChatApp.enums.MessageState;
+import com.xuandong.ChatApp.enums.MessageType;
+import com.xuandong.ChatApp.enums.NotificationType;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -54,7 +54,7 @@ public class MessageService {
 				.senderId(messageRequest.getSenderId()).receiverId(messageRequest.getReceiverId())
 				.type(NotificationType.MESSAGE).chatName(chat.getChatName(message.getSenderId())).build();
 
-		notificationService.sendNotification(messageRequest.getReceiverId(), notification);
+//		notificationService.sendNotification(messageRequest.getReceiverId(), notification);
 	}
 
 	public List<MessageResponse> findChatMessages(String chatId) {
@@ -70,7 +70,7 @@ public class MessageService {
 		NotificationChat notification = NotificationChat.builder().chatId(chat.getId()).type(NotificationType.SEEN)
 				.receiverId(recipientId).senderId(getSenderId(chat, authentication)).build();
 
-		notificationService.sendNotification(recipientId, notification);
+//		notificationService.sendNotification(recipientId, notification);
 
 	}
 
@@ -110,7 +110,7 @@ public class MessageService {
 				.urlFiles(message.getMediaFiles().stream().map(MessageMedia::getFilePath).toList()) 
 				.build();
 
-		notificationService.sendNotification(messageRequest.getReceiverId(), notification);
+//		notificationService.sendNotification(messageRequest.getReceiverId(), notification);
 
 	}
 

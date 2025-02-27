@@ -17,6 +17,7 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,7 +41,8 @@ public class User extends BaseAuditingEntity {
 	private String id;
 	private String firstName;
 	private String lastName;
-	@Column(nullable =  false , unique =  true)
+	@Column(nullable = false, unique = true)
+	@Email
 	private String email;
 	private LocalDateTime lastSeen;
 	private String password;

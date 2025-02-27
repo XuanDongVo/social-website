@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.xuandong.ChatApp.message.MessageConstants;
-import com.xuandong.ChatApp.utils.MessageState;
-import com.xuandong.ChatApp.utils.MessageType;
+import com.xuandong.ChatApp.enums.MessageState;
+import com.xuandong.ChatApp.enums.MessageType;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

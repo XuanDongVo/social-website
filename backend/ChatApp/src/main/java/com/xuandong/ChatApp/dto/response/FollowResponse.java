@@ -16,4 +16,5 @@ import lombok.Setter;
 public class FollowResponse {
 	private String followId;
 	private UserResponse follow;
+	private boolean isFollowingBack;
 }

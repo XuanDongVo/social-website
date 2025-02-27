@@ -11,7 +11,6 @@ const ProfilePage = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const fetchUserProfile = useCallback(async () => {
-        console.log("userId", userId);
         try {
             const response = await getProfileUser(userId);
             setUserProfile(response.data);

@@ -1,17 +1,20 @@
 package com.xuandong.ChatApp.service.collection;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
-import org.springframework.security.core.Authentication;
+import com.xuandong.ChatApp.dto.response.collection.CollectionResponse;
+import com.xuandong.ChatApp.dto.response.collection.PreviewCollectionImageResponse;
+import com.xuandong.ChatApp.entity.*;
+import com.xuandong.ChatApp.mapper.CollectionMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import com.xuandong.ChatApp.entity.Collection;
-import com.xuandong.ChatApp.entity.CollectionDetail;
-import com.xuandong.ChatApp.entity.Post;
-import com.xuandong.ChatApp.entity.SavedPost;
-import com.xuandong.ChatApp.entity.SavedPostDetail;
-import com.xuandong.ChatApp.entity.User;
 import com.xuandong.ChatApp.repository.collection.CollectionDetailRepository;
 import com.xuandong.ChatApp.repository.collection.CollectionRepository;
 import com.xuandong.ChatApp.repository.post.PostRepository;
@@ -27,106 +30,152 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CollectionService {
 
-	private final SavedPostService savedPostService;
-	private final UserRepository userRepository;
-	private final CollectionRepository collectionRepository;
-	private final SavedPostDetailRepository savedPostDetailRepository;
-	private final PostRepository postRepository;
-	private final CollectionDetailRepository collectionDetailRepository;
+    private final SavedPostService savedPostService;
+    private final UserRepository userRepository;
+    private final CollectionRepository collectionRepository;
+    private final SavedPostDetailRepository savedPostDetailRepository;
+    private final PostRepository postRepository;
+    private final CollectionDetailRepository collectionDetailRepository;
+    private final CollectionMapper collectionMapper;
 
-	@Transactional
-	public void createCollection( List<String> savedPostDetails, String collectionName) {
-		SavedPost savedPost = savedPostService.getUserSavedPost();
 
-		if (savedPost == null) {
-			String email= SecurityContextHolder.getContext().getAuthentication().getName();
-			User user = userRepository.findByEmail(email)
-					.orElseThrow(() -> new EntityNotFoundException("User not found by email: " + email));
-			savedPost = savedPostService.createSavedPost(user);
-		}
+    public List<PreviewCollectionImageResponse> getPreviewCollections() {
+        SavedPost savedPost = savedPostService.getUserSavedPost();
+        Pageable pageable = PageRequest.of(0, 4);
 
-		final SavedPost finalSavedPost = savedPost;
+        Page<Collection> collections = collectionRepository.findBySavedPost(savedPost, pageable);
+        if (collections.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-		Collection collection = new Collection();
-		collection.setSavedPost(finalSavedPost);
-		collection.setName(collectionName);
+        return collections.stream()
+                .map(collection -> PreviewCollectionImageResponse.builder()
+                        .collectionId(collection.getId())
+                        .name(collection.getName())
+                        .images(collection.getCollectionDetails().stream()
+                                .map(collectionDetail -> {
+                                    List<PostImages> postImages = collectionDetail.getSavedPostDetail().getPost().getPostImages();
+                                    return postImages.isEmpty() ? null : postImages.getFirst().getUrlImage();
+                                })
+                                .filter(Objects::nonNull)
+                                .toList()
+                        )
+                        .build()
+                )
+                .toList();
+    }
 
-		collectionRepository.save(collection);
 
-		if (!savedPostDetails.isEmpty()) {
-			savedPostDetails.forEach(savePostDetail -> {
-				CollectionDetail collectionDetail = new CollectionDetail();
-				collectionDetail.setCollection(collection);
+    public CollectionResponse getCollectionById(String collectionId , int currentPage){
+        Pageable pageable = PageRequest.of(currentPage, 12);
 
-				Post post = postRepository.findById(savePostDetail)
-						.orElseThrow(() -> new EntityNotFoundException("Post not found with ID: " + savePostDetail));
+        Collection collection = collectionRepository.findById(collectionId).orElseThrow(() -> new EntityNotFoundException("Collection not found with id: " + collectionId));
 
-				SavedPostDetail detail = savedPostDetailRepository.findBySavedPostAndPost(finalSavedPost, post)
-						.orElseThrow(() -> new EntityNotFoundException("SavedPostDetail not found"));
+        Page<CollectionDetail> collectionDetails = collectionDetailRepository.findByCollection(collection, pageable);
 
-				collectionDetail.setSavedPostDetail(detail);
+        if (collectionDetails.isEmpty()) {
+            return null;
+        }
 
-				collectionDetailRepository.save(collectionDetail);
-			});
-		}
-	}
+        return collectionMapper.toCollectionResponse(collection,collectionDetails.getContent(), collection.getSavedPost().getUser());
+    }
 
-	public void modifyCollectionName(String collectionId, String collectionName) {
-		Collection collection = collectionRepository.findById(collectionId)
-				.orElseThrow(() -> new EntityNotFoundException("Collection not found with id: " + collectionId));
-		collection.setName(collectionName);
-		collectionRepository.save(collection);
-	}
 
-	@Transactional
-	public void addSavedPostInCollection(String collectionId, List<String> savedPostDetails
-		) {
-		SavedPost savedPost = savedPostService.getUserSavedPost();
+    @Transactional
+    public void createCollection(List<String> savedPostDetails, String collectionName) {
+        SavedPost savedPost = savedPostService.getUserSavedPost();
 
-		Collection collection = collectionRepository.findById(collectionId)
-				.orElseThrow(() -> new EntityNotFoundException("Collection not found with id: " + collectionId));
+        if (savedPost == null) {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found by email: " + email));
+            savedPost = savedPostService.createSavedPost(user);
+        }
 
-		savedPostDetails.forEach(savePostDetail -> {
-			CollectionDetail collectionDetail = new CollectionDetail();
-			collectionDetail.setCollection(collection);
+        final SavedPost finalSavedPost = savedPost;
 
-			Post post = postRepository.findById(savePostDetail)
-					.orElseThrow(() -> new EntityNotFoundException("Post not found with ID: " + savePostDetail));
+        Collection collection = new Collection();
+        collection.setSavedPost(finalSavedPost);
+        collection.setName(collectionName);
 
-			SavedPostDetail detail = savedPostDetailRepository.findBySavedPostAndPost(savedPost, post)
-					.orElseThrow(() -> new EntityNotFoundException("SavedPostDetail not found"));
+        collectionRepository.save(collection);
 
-			collectionDetail.setSavedPostDetail(detail);
+        if (!savedPostDetails.isEmpty()) {
+            savedPostDetails.forEach(savePostDetail -> {
+                CollectionDetail collectionDetail = new CollectionDetail();
+                collectionDetail.setCollection(collection);
 
-			collectionDetailRepository.save(collectionDetail);
-		});
-	}
+                Post post = postRepository.findById(savePostDetail)
+                        .orElseThrow(() -> new EntityNotFoundException("Post not found with ID: " + savePostDetail));
 
-	@Transactional
-	public void deleteSavedPostInCollection(String collectionId, String postId) {
-		SavedPost savedPost = savedPostService.getUserSavedPost();
+                SavedPostDetail detail = savedPostDetailRepository.findBySavedPostAndPost(finalSavedPost, post)
+                        .orElseThrow(() -> new EntityNotFoundException("SavedPostDetail not found"));
 
-		Collection collection = collectionRepository.findById(collectionId)
-				.orElseThrow(() -> new EntityNotFoundException("Collection not found with id: " + collectionId));
+                collectionDetail.setSavedPostDetail(detail);
 
-		Post post = postRepository.findById(postId)
-				.orElseThrow(() -> new EntityNotFoundException("Post not found with ID: " + postId));
+                collectionDetailRepository.save(collectionDetail);
+            });
+        }
+    }
 
-		SavedPostDetail detail = savedPostDetailRepository.findBySavedPostAndPost(savedPost, post)
-				.orElseThrow(() -> new EntityNotFoundException("SavedPostDetail not found"));
+    public void modifyCollectionName(String collectionId, String collectionName) {
+        Collection collection = collectionRepository.findById(collectionId)
+                .orElseThrow(() -> new EntityNotFoundException("Collection not found with id: " + collectionId));
+        collection.setName(collectionName);
+        collectionRepository.save(collection);
+    }
 
-		CollectionDetail collectionDetail = collectionDetailRepository
-				.findByCollectionAndSavedPostDetail(collection, detail)
-				.orElseThrow(() -> new EntityNotFoundException("Collection not found with id: " + collectionId));
+    @Transactional
+    public void addSavedPostInCollection(String collectionId, List<String> savedPostDetails) {
+        SavedPost savedPost = savedPostService.getUserSavedPost();
 
-		collectionDetailRepository.delete(collectionDetail);
+        Collection collection = collectionRepository.findById(collectionId)
+                .orElseThrow(() -> new EntityNotFoundException("Collection not found with id: " + collectionId));
 
-	}
+        savedPostDetails.forEach(savePostDetail -> {
+            Post post = postRepository.findById(savePostDetail)
+                    .orElseThrow(() -> new EntityNotFoundException("Post not found with ID: " + savePostDetail));
 
-	@Transactional
-	public void deleteColletion(String collectionId) {
-		Collection collection = collectionRepository.findById(collectionId)
-				.orElseThrow(() -> new EntityNotFoundException("Collection not found with id: " + collectionId));
-		collectionRepository.delete(collection);
-	}
+            SavedPostDetail detail = savedPostDetailRepository.findBySavedPostAndPost(savedPost, post)
+                    .orElseThrow(() -> new EntityNotFoundException("SavedPostDetail not found"));
+
+            // Kiểm tra xem collectionDetail đã tồn tại chưa
+            boolean exists = collectionDetailRepository.existsByCollectionAndSavedPostDetail(collection, detail);
+            if (!exists) {
+                CollectionDetail collectionDetail = new CollectionDetail();
+                collectionDetail.setCollection(collection);
+                collectionDetail.setSavedPostDetail(detail);
+
+                collectionDetailRepository.save(collectionDetail);
+            }
+        });
+    }
+
+    @Transactional
+    public void deleteSavedPostInCollection(String collectionId, String postId) {
+        SavedPost savedPost = savedPostService.getUserSavedPost();
+
+        Collection collection = collectionRepository.findById(collectionId)
+                .orElseThrow(() -> new EntityNotFoundException("Collection not found with id: " + collectionId));
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found with ID: " + postId));
+
+        SavedPostDetail detail = savedPostDetailRepository.findBySavedPostAndPost(savedPost, post)
+                .orElseThrow(() -> new EntityNotFoundException("SavedPostDetail not found"));
+
+        CollectionDetail collectionDetail = collectionDetailRepository
+                .findByCollectionAndSavedPostDetail(collection, detail)
+                .orElseThrow(() -> new EntityNotFoundException("Collection not found with id: " + collectionId));
+
+        collectionDetailRepository.delete(collectionDetail);
+
+    }
+
+    @Transactional
+    public void deleteColletion(String collectionId) {
+        Collection collection = collectionRepository.findById(collectionId)
+                .orElseThrow(() -> new EntityNotFoundException("Collection not found with id: " + collectionId));
+        collectionRepository.delete(collection);
+    }
 }

@@ -16,6 +16,7 @@ const SavePostPage = () => {
                 </Link>
                 <Typography variant="h6" fontWeight="bold">All Posts</Typography>
             </Box>
+
             <Box sx={{ maxWidth: "100%", mx: "auto" }}>
                 <SavedPostList userId={userId} />
             </Box>

@@ -2,8 +2,8 @@ package com.xuandong.ChatApp.dto.response;
 
 import java.time.LocalDateTime;
 
-import com.xuandong.ChatApp.utils.MessageState;
-import com.xuandong.ChatApp.utils.MessageType;
+import com.xuandong.ChatApp.enums.MessageState;
+import com.xuandong.ChatApp.enums.MessageType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

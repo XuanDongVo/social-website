@@ -53,9 +53,13 @@ public class PostController {
 		try {
 			postService.deletePost(postId);
 		} catch (Exception e) {
-			new ResponseStatusException(HttpStatus.CONFLICT, "Lỗi");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Lỗi");
 		}
-		
+	}
+
+	@GetMapping
+	public PostResponse getPostById (@RequestParam("id") String postId ) {
+		return postService.findById(postId);
 	}
 
 }

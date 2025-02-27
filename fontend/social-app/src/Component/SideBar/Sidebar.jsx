@@ -47,9 +47,10 @@ const Sidebar = () => {
                         margin: "10px 0",
                         cursor: "pointer",
                         transition: "opacity 0.3s",
+                        alignItems: "center",
                     }}
                 >
-                    {open ? "Instagram" : <Link to="/"><InstagramIcon style={{ color: "black" }} fontSize="medium" /></Link>}
+                    {open ? "Instagram" : <InstagramIcon style={{ color: "black" }} fontSize="medium" />}
                 </Link>
 
                 <List>
@@ -57,7 +58,7 @@ const Sidebar = () => {
                     <Search toggleSidebar={toggleSidebar} sidebarWidth={sidebarWidth} />
                     <Explore />
                     <Message />
-                    <Notifications />
+                    <Notifications toggleSidebar={toggleSidebar} sidebarWidth={sidebarWidth} />
                     <CreatePost />
                     <ProfileLink />
                 </List>

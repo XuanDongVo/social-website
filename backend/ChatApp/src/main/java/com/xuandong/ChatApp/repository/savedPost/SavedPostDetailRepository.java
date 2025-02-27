@@ -15,4 +15,6 @@ public interface SavedPostDetailRepository extends JpaRepository<SavedPostDetail
 	Optional<SavedPostDetail> findBySavedPostAndPost(SavedPost savedPost ,Post post);
 	
 	Page<SavedPostDetail> findBySavedPost(SavedPost savedPost , Pageable pageable);
+
+	boolean existsBySavedPost(SavedPost savedPost);
 }

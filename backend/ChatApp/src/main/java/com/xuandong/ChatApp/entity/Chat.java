@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.xuandong.ChatApp.chat.ChatConstants;
-import com.xuandong.ChatApp.utils.MessageState;
-import com.xuandong.ChatApp.utils.MessageType;
+import com.xuandong.ChatApp.enums.MessageState;
+import com.xuandong.ChatApp.enums.MessageType;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

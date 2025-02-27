@@ -1,5 +1,4 @@
 import {
-    Avatar,
     Button,
     Divider,
     Box,
@@ -11,10 +10,8 @@ import {
     TextField, CircularProgress, CardContent
 } from "@mui/material";
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
-import FavoriteIcon from "@mui/icons-material/Favorite";
 import CommentIcon from "@mui/icons-material/MapsUgcOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
-import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import { useState, useEffect } from "react";
 import Comment from "../Comment/Comment";
 import Caption from "../Comment/Caption";

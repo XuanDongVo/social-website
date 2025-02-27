@@ -6,8 +6,12 @@ import {
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import CloseIcon from "@mui/icons-material/Close";
 import { savePost, unSavePost } from "../../Api/SavedPost/SavedPost";
+import { deleteSavedPostInCollection } from "../../Api/Collection/Collection";
+import { useParams } from "react-router-dom";
 
-const ButtonSavedPost = ({ post }) => {
+const ButtonSavedPost = ({ post, onReload }) => {
+    const { collectionId } = useParams();
+
     const isSavedRef = useRef(post.savedPost || false);
     const [isSaved, setIsSaved] = useState(isSavedRef.current);
     const [open, setOpen] = useState(false);
@@ -28,10 +32,22 @@ const ButtonSavedPost = ({ post }) => {
     };
 
     const handleUnSavePost = async () => {
-        await unSavePost(post.postId);
+        if (collectionId) {
+            // Xóa khỏi collection nếu có collectionId
+            await deleteSavedPostInCollection(post.postId, collectionId);
+        } else {
+            // Xóa khỏi danh sách lưu nếu không có collectionId
+            await unSavePost(post.postId);
+        }
+
         isSavedRef.current = false;
         setIsSaved(false);
         setOpen(false);
+
+        // Gọi reload lại nếu có hàm `onReload`
+        if (onReload) {
+            onReload();
+        }
     };
 
     return (
@@ -42,7 +58,7 @@ const ButtonSavedPost = ({ post }) => {
 
             {/* Dialog xác nhận gỡ lưu bài viết */}
             <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
-                <Box sx={{ borderRadius: 3, overflow: "hidden" }}> {/* Làm mềm góc Dialog */}
+                <Box sx={{ borderRadius: 3, overflow: "hidden" }}>
                     {/* Header với nút đóng */}
                     <DialogTitle
                         sx={{
@@ -67,7 +83,9 @@ const ButtonSavedPost = ({ post }) => {
                                 maxWidth: "100%",
                             }}
                         >
-                            Remove From Saved and Collections?
+                            {collectionId
+                                ? "Remove this post from the collection?"
+                                : "Remove from saved and collections?"}
                         </DialogContentText>
                     </DialogContent>
 

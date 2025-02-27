@@ -3,8 +3,11 @@ import GridOnIcon from "@mui/icons-material/GridOn";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import { Link, useLocation } from "react-router-dom";
+import { AuthContext } from "../../Contexts/AuthContext";
+import { useContext } from "react";
 
 const ProfileTabs = ({ userId }) => {
+    const { user } = useContext(AuthContext);
     const location = useLocation();
 
     // Xác định tab nào đang active dựa vào pathname
@@ -13,6 +16,8 @@ const ProfileTabs = ({ userId }) => {
         if (location.pathname === `/profile/${userId}/saved`) return 2;
         return false; // Mặc định không chọn tab nào nếu không khớp
     };
+
+    const visitingAnotherProfileAndAuth = userId !== user.id;
 
     return (
         <Box sx={{ borderBottom: 1, borderColor: "divider", pt: 1 }}>
@@ -40,20 +45,21 @@ const ProfileTabs = ({ userId }) => {
                     to={`/profile/${userId}`}
                     value={1}
                 />
-                <Tab
+                {!visitingAnotherProfileAndAuth && <Tab
                     icon={<BookmarkBorderIcon fontSize="small" />}
                     label="Saved"
                     component={Link}
                     to={`/profile/${userId}/saved`}
                     value={2}
-                />
-                <Tab
+                />}
+
+                {!visitingAnotherProfileAndAuth && <Tab
                     icon={<FavoriteBorderIcon fontSize="small" />}
                     label="Likes"
                     component={Link}
                     to={`/profile/${userId}/likes`}
                     value={3}
-                />
+                />}
             </Tabs>
         </Box>
     );

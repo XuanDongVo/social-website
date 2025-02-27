@@ -1,10 +1,10 @@
-import { Skeleton, Typography, Stack, Grid2, Box } from "@mui/material";
+import { Skeleton, Typography, Stack, Box, Button, Grid2 } from "@mui/material";
 import SavePost from "./SavePost";
 import { useCallback, useEffect, useState } from "react";
 import { getSavedPosts } from "../../Api/SavedPost/SavedPost";
 import { deletePost } from "../../Api/Post/Post";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
-import { Link } from "react-router-dom";
+import SavedPostListDialog from "../Dialog/SavedPostListDialog";
 
 
 const SavedPostList = ({ userId }) => {
@@ -79,28 +79,47 @@ const SavedPostList = ({ userId }) => {
 export default SavedPostList;
 
 const NoSavedPostsFound = () => {
+    const [open, setOpen] = useState(false);
 
+    const handleOpenDialog = () => {
+        setOpen(true);
+    };
+
+    const handleCloseDialog = () => {
+        setOpen(false);
+    };
 
     return (
-        <Stack alignItems="center" textAlign="center" mt={10} spacing={1.5}>
-            <Box
-                sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: "2px solid black",
-                }}
-            >
-                <BookmarkBorderIcon fontSize="large" />
-            </Box>
-            <Typography variant="h5" fontWeight="bold">Start Saving</Typography>
-            <Typography variant="body2">Save photos and videos to your collection.</Typography>
-            <Link to="/explore" style={{ textDecoration: "none", color: "#1877F2", fontWeight: "bold" }}>
-                Add to collection
-            </Link>
-        </Stack>
+        <>
+            <Stack alignItems="center" textAlign="center" mt={10} spacing={1.5}>
+                <Box
+                    sx={{
+                        width: 60,
+                        height: 60,
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: "2px solid black",
+                    }}
+                >
+                    <BookmarkBorderIcon fontSize="large" />
+                </Box>
+                <Typography variant="h5" fontWeight="bold">Start Saving</Typography>
+                <Typography variant="body2">Save photos and videos to your collection.</Typography>
+                <Button
+                    onClick={handleOpenDialog}
+                    style={{ textDecoration: "none", color: "#1877F2", fontWeight: "bold" }}
+                >
+                    Add to collection
+                </Button>
+            </Stack>
+
+            {open && <SavedPostListDialog open={open} handleCloseDialog={handleCloseDialog} />}
+
+
+
+        </>
     );
 };
+

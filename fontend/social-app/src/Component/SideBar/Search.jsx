@@ -74,7 +74,7 @@ const Search = ({ toggleSidebar, sidebarWidth }) => {
                 variant="persistent"
                 sx={{
                     "& .MuiDrawer-paper": {
-                        width: 300,
+                        width: 350,
                         ml: `${sidebarWidth}px`,
                         transition: enableTransition ? "margin-left 0.3s ease" : "none",
                         padding: "20px",

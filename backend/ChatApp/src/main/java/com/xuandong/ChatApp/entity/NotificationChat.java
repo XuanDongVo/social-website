@@ -2,8 +2,8 @@ package com.xuandong.ChatApp.entity;
 
 import java.util.List;
 
-import com.xuandong.ChatApp.utils.MessageType;
-import com.xuandong.ChatApp.utils.NotificationType;
+import com.xuandong.ChatApp.enums.MessageType;
+import com.xuandong.ChatApp.enums.NotificationType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

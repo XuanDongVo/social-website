@@ -14,6 +14,7 @@ import { AuthContext } from "../../Contexts/AuthContext";
 import ButtonSavedPost from "../Button/ButtonSavedPost";
 import ButtonLike from "../Button/ButtonLike";
 import AvatarUser from "../Avatar/AvatarUser";
+import UserListLikePostModalDialog from "../Dialog/UserListLikePostModalDialog";
 
 import { isFollowing, followUser } from "../../Api/Follow/Follow";
 
@@ -195,6 +196,13 @@ const FeedPost = ({ post }) => {
             </Box>
             {isOpen && <DetailPost post={post} isOpen={isOpen} onClose={handleClose} isAuth={isVisitingOwnProfile} />}
 
+            <UserListLikePostModalDialog
+                open={showLikeDialog}
+                onClose={() => {
+                    setShowLikeDialog(false);
+                }}
+                postId={post.postId}
+            />
         </Card>
     );
 };

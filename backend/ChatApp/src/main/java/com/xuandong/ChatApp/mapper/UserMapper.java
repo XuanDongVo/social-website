@@ -3,6 +3,7 @@ package com.xuandong.ChatApp.mapper;
 import java.util.Collections;
 import java.util.Optional;
 
+import com.xuandong.ChatApp.dto.response.user.SimpleUserResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -50,5 +51,9 @@ public class UserMapper {
 				.followingCount(user.getFollows().size())
 				.followerCount(countFollower)
 				.postCount(user.getPosts().size()).build();
+	}
+
+	public SimpleUserResponse toSimpleUserResponse(User user) {
+		return SimpleUserResponse.builder().id(user.getId()).firstName(user.getFirstName()).lastName(user.getLastName()).build();
 	}
 }
