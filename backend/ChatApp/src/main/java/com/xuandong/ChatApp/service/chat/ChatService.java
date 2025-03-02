@@ -2,6 +2,8 @@ package com.xuandong.ChatApp.service.chat;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.config.RuntimeBeanNameReference;
 import org.springframework.security.core.Authentication;
@@ -32,20 +34,30 @@ public class ChatService {
 
 	@Transactional
 	public String createChat(String senderId, String receiverId) {
-		User sender = userRepository.findById(senderId).orElseThrow(() -> new EntityNotFoundException());
-		User recipient = userRepository.findById(receiverId).orElseThrow(() -> new EntityNotFoundException());
+		User sender = userRepository.findById(senderId)
+				.orElseThrow(() -> new EntityNotFoundException("Sender not found with ID: " + senderId));
+		User recipient = userRepository.findById(receiverId)
+				.orElseThrow(() -> new EntityNotFoundException("Receiver not found with ID: " + receiverId));
 
-		Optional<Chat> existChat = chatRepository.findChatBySenderAndRecipient(sender, recipient);
-		if (existChat.isPresent()) {
-			return existChat.get().getId();
+		// Kiểm tra chat hiện tại (sender -> recipient) hoặc ngược lại (recipient -> sender)
+		Optional<Chat> existingChat = chatRepository.findUniqueChatByUsers(senderId, receiverId);
+		if (existingChat.isPresent()) {
+			return existingChat.get().getId();
 		}
 
+		// Nếu không có, tạo chat mới
 		Chat chat = new Chat();
 		chat.setSender(sender);
 		chat.setRecipient(recipient);
+		chat.setChatKey(generateChatKey(senderId, receiverId)); // Gán chatKey
 
 		return chatRepository.save(chat).getId();
+	}
 
+	private String generateChatKey(String user1Id, String user2Id) {
+		return Stream.of(user1Id, user2Id)
+				.sorted()
+				.collect(Collectors.joining("_"));
 	}
 
 	public ChatResponse findById(String chatId) {

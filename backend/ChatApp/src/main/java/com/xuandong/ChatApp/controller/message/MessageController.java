@@ -33,23 +33,15 @@ public class MessageController {
 
 	private final MessageService messageService;
 
-	@MessageMapping("/chat/{chatId}") // Endpoint cho client gửi message
-	public void saveMessage(@RequestBody MessageRequest message) {
-		messageService.saveMessage(message);
-	}
-
-	@PostMapping(value = "/upload-media", consumes = "multipart/form-data")
-	@ResponseStatus(HttpStatus.CREATED)
-	public void uploadMedia(@RequestBody MessageRequest messageRequest,
-
-			@RequestPart("file") List<MultipartFile> file, Authentication authentication) {
-		messageService.uploadFileMediaMessage(messageRequest, authentication, file);
-	}
+			@MessageMapping("/chat") // Endpoint cho client gửi message
+			public void saveMessage(@RequestBody MessageRequest message) {
+				messageService.saveMessage(message);
+			}
 
 	@PatchMapping
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public void setMessageToSeen(@RequestParam("chat-id") String chatId, Authentication authentication) {
-		messageService.setMessageToSent(chatId, authentication);
+	public void setMessageToSeen(@RequestParam("chat-id") String chatId) {
+		messageService.setMessageToSent(chatId);
 	}	
 
 	@GetMapping("/chat/{chat-id}")

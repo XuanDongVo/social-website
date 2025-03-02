@@ -44,8 +44,7 @@ public class FileService {
 			}
 		}
 
-		String filePath = cloudinary.url().generate(StringUtils.join(publicValue, ".", extension));
-		return filePath;
+		return  cloudinary.url().generate(StringUtils.join(publicValue, ".", extension));
 	}
 
 	public void deleteImageInCloudinary(String imageUrl) throws IOException {

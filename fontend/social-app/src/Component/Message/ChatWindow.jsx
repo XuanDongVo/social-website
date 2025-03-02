@@ -43,12 +43,12 @@ const ChatWindow = ({ selectedChat, messages, onSendMessage, newMessage, setNewM
                             p: 2,
                             backgroundColor: "#f5f5f5",
                             display: "flex",
-                            flexDirection: "column-reverse", // Đảo ngược để tin mới nhất ở dưới
+                            flexDirection: "column-reverse",
                         }}
                     >
                         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                            {messages.map((message) => (
-                                <MessageBubble key={message.id} message={message} />
+                            {messages.map((message, index) => (
+                                <MessageBubble key={message.id} message={message} isLastMessageFromMe={index === messages.length - 1 && message.sender === "Me"} />
                             ))}
                         </Box>
                     </Box>

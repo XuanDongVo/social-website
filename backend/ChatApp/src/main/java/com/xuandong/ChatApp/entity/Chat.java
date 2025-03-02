@@ -1,28 +1,17 @@
 package com.xuandong.ChatApp.entity;
 
-import java.beans.Transient;
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.xuandong.ChatApp.chat.ChatConstants;
 import com.xuandong.ChatApp.enums.MessageState;
 import com.xuandong.ChatApp.enums.MessageType;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OrderBy;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.beans.Transient;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -41,9 +30,18 @@ public class Chat extends BaseAuditingEntity {
 	@ManyToOne
 	@JoinColumn(name = "recipient_id")
 	private User recipient;
-	@OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "chat", fetch = FetchType.LAZY)
 	@OrderBy("createdDate DESC")
 	private List<Message> messages;
+
+	@Column(name = "chat_key", unique = true, nullable = false)
+	private String chatKey;
+
+//	public void setChatKey(String user1Id, String user2Id) {
+//		this.chatKey = Stream.of(user1Id, user2Id)
+//				.sorted()
+//				.collect(Collectors.joining("_"));
+//	}
 
 	@Transient
 	public String getChatName(String senderId) {
@@ -70,10 +68,10 @@ public class Chat extends BaseAuditingEntity {
 	@Transient
 	public String getLastMessage() {
 		if (messages != null && !messages.isEmpty()) {
-			if (messages.get(0).getType() != MessageType.TEXT) {
+			if (messages.getFirst().getType() != MessageType.TEXT) {
 				return "Attachment";
 			}
-			return messages.get(0).getContent();
+			return messages.getFirst().getContent();
 		}
 		return null; // No messages available
 	}
@@ -81,7 +79,7 @@ public class Chat extends BaseAuditingEntity {
 	@Transient
 	public LocalDateTime getLastMessageTime() {
 		if (messages != null && !messages.isEmpty()) {
-			return messages.get(0).getCreatedDate();
+			return messages.getFirst().getCreatedDate();
 		}
 		return null;
 	}

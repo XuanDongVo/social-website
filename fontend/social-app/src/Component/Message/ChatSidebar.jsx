@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
     Box,
     Drawer,
@@ -10,10 +10,16 @@ import {
     TextField,
     IconButton,
     Typography,
+    Badge,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import moment from "moment";
+import { AuthContext } from "../../Contexts/AuthContext";
 
 const ChatSidebar = ({ chatList, selectedChat, onSelectChat }) => {
+
+    const { user } = useContext(AuthContext);
+
     return (
         <Drawer
             variant="permanent"
@@ -54,29 +60,58 @@ const ChatSidebar = ({ chatList, selectedChat, onSelectChat }) => {
                         }}
                     >
                         <ListItemAvatar>
-                            <Avatar alt={chat.name} src={chat.avatar} sx={{ width: 40, height: 40 }} />
+                            <Badge
+                                color="success"
+                                variant="dot"
+                                invisible={!chat.isRecipientOnline}
+                                anchorOrigin={{
+                                    vertical: "bottom",
+                                    horizontal: "right",
+                                }}
+                                sx={{ "& .MuiBadge-dot": { width: 10, height: 10 } }}
+                            >
+                                <Avatar
+                                    alt={chat.name}
+                                    src={`https://via.placeholder.com/40?text=${chat.name[0]}`}
+                                    sx={{ width: 40, height: 40 }}
+                                />
+                            </Badge>
                         </ListItemAvatar>
                         <ListItemText
                             primary={
-                                <Typography variant="subtitle1" fontWeight="500">
-                                    {chat.name}
-                                </Typography>
-                            }
-                            secondary={
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {chat.lastMessage}
+                                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <Typography variant="subtitle1" fontWeight="500">
+                                        {chat.name}
                                     </Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                        {chat.time}
+                                    <Typography variant="caption" color="textSecondary">
+                                        {chat.lastMessageTime ? moment(chat.lastMessageTime).format("hh:mm ") : ""}
                                     </Typography>
-                                    {chat.active && (
-                                        <Typography variant="caption" color="green">
-                                            Active now
-                                        </Typography>
-                                    )}
                                 </Box>
                             }
+                            secondary={
+                                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                    <Box
+                                        sx={{
+                                            maxWidth: "70%",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                        }}
+                                    >
+                                        <Typography
+                                            variant="body2"
+                                            color={chat.unReadCount > 0 ? 'textPrimary' : 'textSecondary'}
+                                            sx={{ fontWeight: chat.unReadCount > 0 ? 'bold' : 'normal' }}
+                                        >
+                                            {user?.id === chat?.senderId ? "You: " : ""} {chat?.lastMessage || "No messages yet"}
+                                        </Typography>
+                                    </Box>
+                                    <Badge badgeContent={chat.unReadCount} color="error" sx={{ ml: 1 }}>
+                                        <Typography variant="caption" color="text.secondary"></Typography>
+                                    </Badge>
+                                </Box>
+                            }
+                            secondaryTypographyProps={{ component: "div" }}
                         />
                     </ListItem>
                 ))}

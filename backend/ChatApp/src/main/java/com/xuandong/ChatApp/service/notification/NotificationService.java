@@ -1,5 +1,6 @@
 package com.xuandong.ChatApp.service.notification;
 
+import com.xuandong.ChatApp.dto.response.NotificationChatResponse;
 import com.xuandong.ChatApp.dto.response.notification.NotificationFollowResponse;
 import com.xuandong.ChatApp.dto.response.notification.NotificationLikePostResponse;
 import com.xuandong.ChatApp.entity.Post;
@@ -15,6 +16,7 @@ import com.xuandong.ChatApp.enums.ActionType;
 import com.xuandong.ChatApp.enums.EntityType;
 import com.xuandong.ChatApp.utils.SseEmitterManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,6 +29,16 @@ public class NotificationService {
 	private final NotificationContentRepository notificationContentRepository;
 	private final UserMapper userMapper;
 	private final SseEmitterManager sseEmitterManager;
+	private final SimpMessagingTemplate messagingTemplate;
+
+
+		public void sendMessage(String userId , NotificationChatResponse notification){
+			messagingTemplate.convertAndSendToUser(
+					userId,
+					"/chat",
+					notification
+			);
+		}
 
 	public void createNotification(User actor, User receiver, EntityType entityType, String entityId, ActionType actionType) {
 		// 1. Kiểm tra và lấy hoặc tạo NotificationContent
