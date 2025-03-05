@@ -68,6 +68,11 @@ public class PostService {
 	            .map(post -> postMapper.postMapper(post, user))
 	            .collect(Collectors.toList());
 	}
+
+	public List<PostResponse> suggestPostsExceptSelfAndFollowing(int page){
+
+		return null;
+	}
 	
 	// đánh dấu đã xem và xóa trong redis
 	public void markPostAsSeen(String postId) {

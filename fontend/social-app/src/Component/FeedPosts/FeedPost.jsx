@@ -1,10 +1,8 @@
-import React, { useState, useRef, useContext, useEffect } from "react";
+import React, { useState, useRef, useContext, useEffect, forwardRef } from "react";
 import {
     Box, Button, Card, CardActions, CardContent, CardHeader, IconButton, TextField, Typography, CircularProgress
 } from "@mui/material";
-
 import CommentIcon from "@mui/icons-material/MapsUgcOutlined";
-
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EmojiPicker from 'emoji-picker-react';
@@ -15,10 +13,10 @@ import ButtonSavedPost from "../Button/ButtonSavedPost";
 import ButtonLike from "../Button/ButtonLike";
 import AvatarUser from "../Avatar/AvatarUser";
 import UserListLikePostModalDialog from "../Dialog/UserListLikePostModalDialog";
-
 import { isFollowing, followUser } from "../../Api/Follow/Follow";
 
-const FeedPost = ({ post }) => {
+// Sử dụng forwardRef để nhận ref từ parent
+const FeedPost = forwardRef(({ post }, ref) => {
     const { user } = useContext(AuthContext);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [comment, setComment] = useState("");
@@ -30,19 +28,17 @@ const FeedPost = ({ post }) => {
     const commentRef = useRef(null);
     const [countLikes, setCountLikes] = useState(post?.countLikes || 0);
     const [showLikeDialog, setShowLikeDialog] = useState(false);
-
     const [isVisitingOwnProfile, setIsVisitingOwnProfile] = useState(false);
 
     useEffect(() => {
         if (post?.user?.id) {
             setIsVisitingOwnProfile(post.user.id === user.id);
         }
-    }, []);
+    }, [post, user]);
 
     const handleUpdateLikes = (newLikedState) => {
         setCountLikes((prev) => newLikedState ? prev + 1 : prev - 1);
     };
-
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -58,10 +54,8 @@ const FeedPost = ({ post }) => {
                 }
             }
         };
-
         checkFollowing();
-    }, []);
-
+    }, [post]);
 
     const handleSubmitComment = () => {
         if (comment.trim()) {
@@ -69,9 +63,11 @@ const FeedPost = ({ post }) => {
             setComment("");
         }
     };
+
     const handleEmojiClick = (emojiObject) => {
         setComment((prev) => prev + emojiObject.emoji);
     };
+
     const handleFollow = () => {
         setIsUpdating(true);
         setTimeout(() => {
@@ -88,11 +84,10 @@ const FeedPost = ({ post }) => {
         }, 1000);
     };
 
-
     return (
-        <Card sx={{ maxWidth: 600, margin: "30px auto", position: "relative" }}>
+        <Card ref={ref} sx={{ maxWidth: 600, margin: "30px auto", position: "relative" }}>
             <CardHeader
-                avatar={<AvatarUser profilePicURL={post?.user?.profilePicURL} hasStory={true} seenStory={true} size={36} />}
+                avatar={<AvatarUser profilePicURL={post?.user?.profilePicture} hasStory={false} seenStory={false} size={36} />}
                 title={<Typography variant="subtitle1" fontWeight="bold">{post.user.firstName} {post.user.lastName}</Typography>}
                 subheader="2 hours ago"
                 action={
@@ -101,26 +96,23 @@ const FeedPost = ({ post }) => {
                             <IconButton onClick={handleDelete} disabled={isDeleting}>
                                 <DeleteIcon fontSize="small" sx={{ color: isDeleting ? "gray" : "red" }} />
                             </IconButton>
-                        ) :
-                            (
-                                <Button
-                                    variant="contained"
-                                    color={isFollowingUser ? "secondary" : "primary"}
-                                    size="small"
-                                    disabled={isUpdating}
-                                    onClick={handleFollow}
-                                >
-                                    {isUpdating ? <CircularProgress size={20} /> : isFollowingUser ? "Unfollow" : "Follow"}
-                                </Button>
-                            )}
+                        ) : (
+                            <Button
+                                variant="contained"
+                                color={isFollowingUser ? "secondary" : "primary"}
+                                size="small"
+                                disabled={isUpdating}
+                                onClick={handleFollow}
+                            >
+                                {isUpdating ? <CircularProgress size={20} /> : isFollowingUser ? "Unfollow" : "Follow"}
+                            </Button>
+                        )}
                     </Box>
                 }
             />
-
             <Box>
                 <SwiperImage images={post.images} />
             </Box>
-
             <CardActions disableSpacing sx={{ display: "flex", justifyContent: "space-between", padding: 0 }}>
                 <Box display="flex" gap={1}>
                     <ButtonLike post={post} onLikeChange={handleUpdateLikes} />
@@ -128,15 +120,12 @@ const FeedPost = ({ post }) => {
                         <CommentIcon />
                     </IconButton>
                 </Box>
-
                 <ButtonSavedPost post={post} />
             </CardActions>
-
             <CardContent sx={{ padding: 0.5, display: "flex", flexDirection: "column" }}>
                 <Typography variant="body2">
                     <strong>{post.user.firstName} {post.user.lastName}</strong> {post.caption}
                 </Typography>
-
                 <Typography
                     variant="like"
                     color="text.secondary"
@@ -145,16 +134,12 @@ const FeedPost = ({ post }) => {
                 >
                     {countLikes} likes
                 </Typography>
-
                 {post?.countComments > 0 && (
                     <Typography variant="comment" color="text.secondary">
                         View all {post?.countComments} comments
                     </Typography>
                 )}
             </CardContent>
-
-
-
             <Box p={2} sx={{ padding: 1 }}>
                 {comments?.map((c) => (
                     <Typography key={c.id} variant="body2" sx={{ mb: 1 }}>
@@ -178,7 +163,6 @@ const FeedPost = ({ post }) => {
                     <IconButton onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
                         <SentimentSatisfiedAltIcon color={showEmojiPicker ? "primary" : "default"} />
                     </IconButton>
-
                     {showEmojiPicker && (
                         <Box sx={{
                             position: "absolute",
@@ -195,16 +179,13 @@ const FeedPost = ({ post }) => {
                 </Box>
             </Box>
             {isOpen && <DetailPost post={post} isOpen={isOpen} onClose={handleClose} isAuth={isVisitingOwnProfile} />}
-
             <UserListLikePostModalDialog
                 open={showLikeDialog}
-                onClose={() => {
-                    setShowLikeDialog(false);
-                }}
+                onClose={() => setShowLikeDialog(false)}
                 postId={post.postId}
             />
         </Card>
     );
-};
+});
 
 export default FeedPost;

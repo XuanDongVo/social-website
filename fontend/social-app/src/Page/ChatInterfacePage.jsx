@@ -18,7 +18,6 @@ const ChatInterfacePage = () => {
     const [chatList, setChatList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [stompClient, setStompClient] = useState(null);
-    const [type, setType] = useState("TEXT"); // Loại tin nhắn
 
 
     // Fetch danh sách chat khi component mount
@@ -28,7 +27,6 @@ const ChatInterfacePage = () => {
                 if (user?.id) {
                     const response = await getAllChats(user.id);
                     setChatList(response.data);
-                    console.log("📚 Fetched chat list:", response.data);
                 }
             } catch (error) {
                 console.error("Error fetching chat list:", error);
@@ -52,6 +50,7 @@ const ChatInterfacePage = () => {
                             sender: msg.senderId === user?.id ? "Me" : selectedChat.name,
                             time: moment(msg.createdAt).format("hh:mm"),
                             seen: msg.state === "SEEN",
+                            urlImage: msg.urlImage
                         })).sort((a, b) => new Date(b.time) - new Date(a.time))
                     );
 
@@ -65,7 +64,6 @@ const ChatInterfacePage = () => {
                         reconnectDelay: 5000,
                         onConnect: () => {
                             console.log("✅ Connected to WebSocket via SockJS");
-
                             client.subscribe(`/user/${user.id}/chat`, (message) => {
                                 const notification = JSON.parse(message.body);
                                 if (notification.chatId === selectedChat.id) {
@@ -86,6 +84,7 @@ const ChatInterfacePage = () => {
                                             sender: notification.senderId === user?.id ? "Me" : selectedChat.name,
                                             time: moment(notification.createdAt || Date.now()).format("hh:mm"),
                                             seen: false, // Mặc định chưa đọc
+                                            urlImage: notification.urlImage
                                         };
 
                                         setMessages((prev) => [...prev, newMessage].sort((a, b) => new Date(b.time) - new Date(a.time)));
@@ -146,7 +145,7 @@ const ChatInterfacePage = () => {
             let urlImage = null;
             if (selectFile) {
                 const response = await uploadFile({ files: [selectFile] });
-                urlImage = response.data;
+                urlImage = response.data[0];
             }
             try {
                 const messageRequest = {
@@ -157,7 +156,6 @@ const ChatInterfacePage = () => {
                     type: selectFile ? "IMAGE" : "TEXT",
                     urlImage: urlImage
                 };
-                console.log("📤 Sending message request:", messageRequest);
 
                 stompClient.publish({
                     destination: "/app/chat",
@@ -172,6 +170,7 @@ const ChatInterfacePage = () => {
                         sender: "Me",
                         time: moment().format("hh:mm"),
                         seen: false,
+                        urlImage: urlImage
                     },
                 ].sort((a, b) => new Date(b.time) - new Date(a.time)));
 
@@ -200,7 +199,12 @@ const ChatInterfacePage = () => {
     };
 
     return (
-        <Box sx={{ display: "flex", height: "100vh", mt: 2 }}>
+        <Box sx={{
+            p: 0,
+            display: "flex",
+            minHeight: "100vh", // Sử dụng minHeight để tránh che navigation
+
+        }}>
             <ChatSidebar chatList={chatList} selectedChat={selectedChat} onSelectChat={setSelectedChat} />
             <ChatWindow
                 selectedChat={selectedChat}

@@ -10,7 +10,7 @@ const ChatInput = ({ newMessage, setNewMessage, onSendMessage }) => {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const fileInputRef = useRef(null);
     const [previewImage, setPreviewImage] = useState(null);
-    const [selectedFile, setSelectedFile] = useState([]);
+    const [selectedFile, setSelectedFile] = useState(null);
 
     // Hàm mở dialog chọn file
     const handleImageClick = () => {
@@ -23,7 +23,7 @@ const ChatInput = ({ newMessage, setNewMessage, onSendMessage }) => {
         if (file) {
             const previewUrl = URL.createObjectURL(file);
             setPreviewImage(previewUrl);
-            setSelectedFile([file]);
+            setSelectedFile(file);
             console.log(file);
         }
     };
@@ -33,7 +33,7 @@ const ChatInput = ({ newMessage, setNewMessage, onSendMessage }) => {
         if (previewImage) {
             URL.revokeObjectURL(previewImage);
             setPreviewImage(null);
-            setSelectedFile([]);;
+            setSelectedFile(null);;
             fileInputRef.current.value = "";
         }
     };

@@ -26,6 +26,8 @@ public class UserMapper {
 
 		return UserResponse.builder().id(user.getId()).firstName(user.getFirstName()).lastName(user.getLastName())
 				.email(user.getEmail()).lastSeen(user.getLastSeen()).isOnline(user.isUserOnline())
+				.profilePicture(user.getProfileImage())
+				.bio(user.getBio())
 				.stories(Optional.ofNullable(user.getStories()).orElse(Collections.emptyList()).stream()
 						.map(story -> storyMapper.toStoryResponse(story, currentUser)).toList())
 				.build();

@@ -3,6 +3,8 @@ package com.xuandong.ChatApp.repository.user;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,5 +22,8 @@ public interface UserRepository extends JpaRepository<User, String> {
 	List<User> findAllUsersExceptSelf(@Param("publicId") String publicId);
 
 	Optional<User> findById(String id);
+
+	@Query("SELECT u FROM User u WHERE u.firstName LIKE %:keyWord% OR u.lastName LIKE %:keyWord%")
+	Page<User> searchingUser( @Param("keyWord") String keyWord,  Pageable pageable);
 
 }

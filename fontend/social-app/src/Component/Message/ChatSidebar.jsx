@@ -27,10 +27,12 @@ const ChatSidebar = ({ chatList, selectedChat, onSelectChat }) => {
                 width: 300,
                 flexShrink: 0,
                 "& .MuiDrawer-paper": {
-                    width: 300,
+                    width: "300px",
                     boxSizing: "border-box",
                     borderRight: "1px solid #ddd",
                     backgroundColor: "#fafafa",
+                    position: "relative", // Tránh fixed nếu không cần thiết
+                    top: 0, // Đảm bảo bắt đầu từ đầu trang
                 },
             }}
         >

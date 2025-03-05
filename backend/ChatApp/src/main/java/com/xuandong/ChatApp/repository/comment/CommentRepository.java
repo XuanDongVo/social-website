@@ -13,7 +13,7 @@ import com.xuandong.ChatApp.entity.Comment;
 
 public interface CommentRepository extends JpaRepository<Comment, String> {
 
-	@Query("SELECT c FROM Comment c WHERE c.post.id = :id AND c.parentComment IS NULL")
+	@Query("SELECT c FROM Comment c WHERE c.post.id = :id AND c.parentComment IS NULL order by c.createAt ASC")
 	Page<Comment> findParentCommentsByPostId(@Param("id") String postId, Pageable pageable);
 
 	@Query("SELECT c FROM Comment c WHERE c.parentComment.id = :parentId")

@@ -46,6 +46,8 @@ public class User extends BaseAuditingEntity {
 	private String email;
 	private LocalDateTime lastSeen;
 	private String password;
+	private String profileImage;
+	private String bio;
 
 	@OneToMany(mappedBy = "sender")
 	private List<Chat> chatsAsSender;

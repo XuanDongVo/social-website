@@ -70,17 +70,17 @@ const MessageBubble = ({ message, isLastMessageFromMe }) => {
             )}
 
             {/* Bong bóng cho ảnh */}
-            {message.image && (
+            {message.urlImage && (
                 <Box
                     sx={{
-                        maxWidth: "70%",
+                        maxWidth: "20%",
                         alignSelf: message.sender === "Me" ? "flex-end" : "flex-start",
                         borderRadius: 5,
                     }}
                 >
                     <Box
                         component="img"
-                        src={"https://fakeimg.pl/440x320/?text=Image1"}
+                        src={message.urlImage}
                         alt="Message Image"
                         sx={{
                             maxWidth: "100%", // Đảm bảo ảnh không vượt quá bong bóng

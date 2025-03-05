@@ -24,3 +24,8 @@ export const getPostById = async (postId) => {
     const response = await api.get(`/api/v1/post?id=${postId}`);
     return response;
 }
+
+export const markPostAsSeen = async (postId) => {
+    const response = await api.delete(`/api/v1/post/posts/seen?id=${postId}`);
+    return response;
+}

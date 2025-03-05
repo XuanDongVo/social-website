@@ -26,6 +26,6 @@ public class MessageResponse {
 	private String senderId;
 	private String receiverId;
 	private LocalDateTime createdAt;
-	private byte[] media;
+	private String urlImage;
 }
 

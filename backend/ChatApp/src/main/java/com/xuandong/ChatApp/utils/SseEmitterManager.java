@@ -3,12 +3,10 @@ package com.xuandong.ChatApp.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.xuandong.ChatApp.dto.response.notification.NotificationFollowResponse;
-import com.xuandong.ChatApp.dto.response.notification.NotificationLikePostResponse;
+import com.xuandong.ChatApp.dto.response.notification.NotificationResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -51,11 +49,11 @@ public class SseEmitterManager {
             }
         }
 
-    public void sendFollowNotification(String userId, NotificationFollowResponse notification) {
+    public void sendFollowNotification(String userId, NotificationResponse notification) {
         sendSseEvent(userId, notification);
     }
 
-    public void sendLikePostNotification(String userId, NotificationLikePostResponse notification) {
+    public void sendLikePostNotification(String userId, NotificationResponse notification) {
         sendSseEvent(userId, notification);
     }
 }

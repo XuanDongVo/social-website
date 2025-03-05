@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from "react";
-import { ListItem, ListItemButton, ListItemIcon, ListItemText, Tooltip, tooltipClasses, Drawer, Box, Typography, Divider } from "@mui/material";
+import { ListItem, ListItemButton, ListItemIcon, ListItemText, Tooltip, tooltipClasses, Drawer, Box, Typography, Divider, Badge } from "@mui/material";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import { styled } from "@mui/material/styles";
 import { AuthContext } from "../../Contexts/AuthContext";
 import NotificationItem from "../NotificationItem/NotifcationItem";
-
+import { getNotificationOfUser, markAsRead } from "../../Api/Notification/Notification";
 
 // Custom Tooltip
 const CustomTooltip = styled(({ className, ...props }) => (
@@ -21,11 +21,38 @@ const CustomTooltip = styled(({ className, ...props }) => (
         color: "#fff", // Đổi màu của mũi tên
     },
 }));
-
 const Notifications = ({ toggleSidebar, sidebarWidth }) => {
-    const { notifications } = useContext(AuthContext);
+    const { notifications, setNotifications } = useContext(AuthContext);
     const [openDrawer, setOpenDrawer] = useState(false);
     const [enableTransition, setEnableTransition] = useState(false);
+
+
+
+    // Lấy danh sách thông báo khi component được render
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            try {
+                const response = await getNotificationOfUser();
+                setNotifications(prevNotifications => [...prevNotifications, ...response.data]);
+            } catch (error) {
+                console.error("Error fetching notifications:", error);
+            }
+        };
+        fetchNotifications();
+    }, []);
+
+    // Đánh dấu tất cả thông báo là đã đọc
+    useEffect(() => {
+        const markAllAsRead = async () => {
+            try {
+                await markAsRead();
+            } catch (error) {
+                console.error("Error marking notifications as read:", error);
+            }
+        };
+        markAllAsRead();
+    }, []);
+
 
 
 
@@ -42,15 +69,26 @@ const Notifications = ({ toggleSidebar, sidebarWidth }) => {
         toggleSidebar(!openDrawer);
     };
 
-
     return (
         <>
             <ListItem disablePadding>
                 <ListItemButton onClick={handleClick}>
                     <CustomTooltip title="Notification" placement="bottom-end">
-                        <ListItemIcon style={{ minWidth: '40px' }}><FavoriteBorderIcon /></ListItemIcon>
+                        <ListItemIcon style={{ minWidth: '40px' }}>
+                            <Badge
+                                badgeContent={notifications.filter(noti => noti.status === 'UNREAD').length}
+                                color="error"
+                                invisible={notifications.filter(noti => noti.status === 'UNREAD').length === 0}
+                                anchorOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                }}
+                            >
+                                <FavoriteBorderIcon />
+                            </Badge>
+                        </ListItemIcon>
                     </CustomTooltip>
-                    <ListItemText primary="Notifcations" />
+                    <ListItemText primary="Notifications" />
                 </ListItemButton>
             </ListItem>
 
@@ -85,7 +123,7 @@ const Notifications = ({ toggleSidebar, sidebarWidth }) => {
                 </Box>
             </Drawer>
         </>
-    )
-}
+    );
+};
 
 export default Notifications;

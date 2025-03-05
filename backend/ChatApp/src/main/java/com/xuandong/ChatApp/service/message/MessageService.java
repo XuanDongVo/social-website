@@ -5,11 +5,14 @@ import com.xuandong.ChatApp.dto.response.MessageResponse;
 import com.xuandong.ChatApp.dto.response.NotificationChatResponse;
 import com.xuandong.ChatApp.entity.Chat;
 import com.xuandong.ChatApp.entity.Message;
+import com.xuandong.ChatApp.entity.MessageMedia;
 import com.xuandong.ChatApp.entity.User;
 import com.xuandong.ChatApp.enums.MessageState;
+import com.xuandong.ChatApp.enums.MessageType;
 import com.xuandong.ChatApp.enums.NotificationType;
 import com.xuandong.ChatApp.mapper.MessageMapper;
 import com.xuandong.ChatApp.repository.chat.ChatRepository;
+import com.xuandong.ChatApp.repository.message.MessageMediaRepository;
 import com.xuandong.ChatApp.repository.message.MessageRepository;
 import com.xuandong.ChatApp.repository.user.UserRepository;
 import com.xuandong.ChatApp.service.file.FileService;
@@ -32,6 +35,7 @@ public class MessageService {
 	private final MessageMapper mapper;
 	private final NotificationService notificationService;
 	private final UserRepository userRepository;
+	private final MessageMediaRepository messageMediaRepository;
 
 	public void saveMessage(MessageRequest messageRequest) {
 		Chat chat = chatRepository.findById(messageRequest.getChatId())
@@ -42,9 +46,22 @@ public class MessageService {
 		message.setChat(chat);
 		message.setSenderId(messageRequest.getSenderId());
 		message.setReceiverId(messageRequest.getReceiverId());
-		message.setType(messageRequest.getType());
+		message.setType(MessageType.valueOf(messageRequest.getType().name()));
 		message.setState(MessageState.SENT);
 		messageRepository.save(message);
+
+		// Xử lý nếu tin nhắn là IMAGE
+		if (MessageType.IMAGE.equals(messageRequest.getType())) {
+			MessageMedia messageMedia = new MessageMedia();
+			messageMedia.setMessage(message);
+			messageMedia.setFilePath(messageRequest.getUrlImage());
+			messageMediaRepository.save(messageMedia);
+		}
+
+		// Xây dựng thông báo
+		NotificationType notificationType = MessageType.IMAGE.equals(messageRequest.getType())
+				? NotificationType.IMAGE
+				: NotificationType.MESSAGE;
 
 		NotificationChatResponse notification = NotificationChatResponse.builder()
 				.chatId(chat.getId())
@@ -52,9 +69,10 @@ public class MessageService {
 				.senderId(messageRequest.getSenderId())
 				.receiverId(messageRequest.getReceiverId())
 				.chatName(chat.getChatName(messageRequest.getSenderId()))
-				.messageType(messageRequest.getType())
-//				.notificationType(NotificationType.MESSAGE)
+				.messageType(MessageType.valueOf(messageRequest.getType().name()))
+				.notificationType(notificationType)
 				.createdAt(LocalDateTime.now())
+				.pathImage(messageRequest.getUrlImage())
 				.build();
 
 		notificationService.sendMessage(messageRequest.getReceiverId(), notification);

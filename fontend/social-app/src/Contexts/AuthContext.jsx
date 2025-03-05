@@ -41,28 +41,36 @@ export const AuthProvider = ({ children }) => {
                     if (retryCount < maxRetries) {
                         retryCount++;
                         setTimeout(() => {
-                            connectSSE(); // Thử kết nối lại
+                            connectSSE();
                         }, 2000);
                     } else {
                         setEventSource(null);
-                        setNotifications([]); // Reset khi không kết nối được
+                        setNotifications([]);
                     }
                 };
 
-                // source.onmessage = (event) => {
-                //     try {
-                //         const data = JSON.parse(event.data);
-                //         console.log("Thông báo mới (mặc định):", data);
-                //     } catch (e) {
-                //         console.error("Lỗi parse thông báo mặc định:", e, "Raw data:", event.data);
-                //     }
-                // };
 
                 source.addEventListener("notification", (event) => {
                     try {
                         const notification = JSON.parse(event.data);
                         console.log("📩 Bạn có thông báo mới:", notification);
-                        setNotifications((prev) => [notification, ...prev.slice(0, 49)]);
+
+                        setNotifications((prev) => {
+                            // Kiểm tra xem notification mới có trùng với bất kỳ notification nào trong danh sách hiện tại không
+                            const isDuplicate = prev.some((existingNoti) =>
+                                existingNoti.actor?.id === notification.actor?.id &&
+                                existingNoti.entityType === notification.entityType &&
+                                existingNoti.entityId === notification.entityId &&
+                                existingNoti.actionType === notification.actionType
+                            );
+
+                            // Nếu không trùng lặp thì thêm notification mới vào đầu danh sách
+                            if (!isDuplicate) {
+                                return [notification, ...prev.slice(0, 49)];
+                            }
+                            // Nếu trùng thì giữ nguyên danh sách cũ
+                            return prev;
+                        })
                     } catch (e) {
                         console.error("Lỗi parse JSON từ notification:", e, "Raw data:", event.data);
                     }
@@ -135,6 +143,7 @@ export const AuthProvider = ({ children }) => {
                 error,
                 setError,
                 notifications,
+                setNotifications
             }}
         >
             {children}

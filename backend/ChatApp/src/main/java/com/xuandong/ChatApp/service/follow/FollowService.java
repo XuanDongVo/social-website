@@ -88,6 +88,7 @@ public class FollowService {
 	    if (existingFollow.isPresent()) {
 	        // Nếu đã follow, thì unfollow
 	        followRepository.delete(existingFollow.get());
+			notificationService.deleteFollowNotification(self,userToFollow);
 	        return false;
 	    } else {
 	        // Nếu chưa follow, thì tạo mới

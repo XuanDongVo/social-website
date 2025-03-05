@@ -9,7 +9,7 @@ import {
 
 } from "@mui/material";
 import ChatIcon from "@mui/icons-material/Chat";
-
+import { Link } from "react-router-dom";
 import { styled } from "@mui/material/styles";
 
 // Custom Tooltip
@@ -33,18 +33,18 @@ const Message = () => {
 
     return (
         <>
-            {/* Nút mở hộp thoại */}
-            <ListItem disablePadding>
-                <ListItemButton >
-                    <CustomTooltip title="Messages" placement="bottom-end">
-                        <ListItemIcon style={{ minWidth: "40px" }}>
-                            <ChatIcon />
-                        </ListItemIcon>
-                    </CustomTooltip>
-                    <ListItemText primary="Messages" />
-                </ListItemButton>
-            </ListItem>
-
+            <Link to={`/chat`} style={{ textDecoration: 'none', color: 'black' }}>
+                <ListItem disablePadding>
+                    <ListItemButton >
+                        <CustomTooltip title="Messages" placement="bottom-end">
+                            <ListItemIcon style={{ minWidth: "40px" }}>
+                                <ChatIcon />
+                            </ListItemIcon>
+                        </CustomTooltip>
+                        <ListItemText primary="Messages" />
+                    </ListItemButton>
+                </ListItem>
+            </Link>
 
         </>
     );

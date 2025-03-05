@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Box, Paper, Typography, Avatar, Button } from "@mui/material";
 import MessageBubble from "./MessageBubble";
 import ChatInput from "./ChatInput";
+import { Link } from "react-router-dom";
+import { AuthContext } from "../../Contexts/AuthContext";
 
 const ChatWindow = ({ selectedChat, messages, onSendMessage, newMessage, setNewMessage }) => {
+    const { user } = useContext(AuthContext);
+
     return (
-        <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column", height: "80vh", p: 0 }}>
+        <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column", height: "90vh", p: 0 }}>
             {selectedChat ? (
                 <>
                     <Paper
@@ -32,9 +36,11 @@ const ChatWindow = ({ selectedChat, messages, onSendMessage, newMessage, setNewM
                                 )}
                             </Box>
                         </Box>
-                        <Button variant="text" color="primary">
-                            View profile
-                        </Button>
+                        <Link to={`/profile/${user.id === selectedChat.senderId ? selectedChat.senderId : selectedChat.receiverId}`} style={{ textDecoration: 'none', color: 'black' }}>
+                            <Button variant="text" color="primary">
+                                View profile
+                            </Button>
+                        </Link>
                     </Paper>
                     <Box
                         sx={{

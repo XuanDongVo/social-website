@@ -3,6 +3,8 @@ import { useState, useContext, useEffect, useCallback } from "react";
 import { AuthContext } from "../../Contexts/AuthContext";
 import { isFollowing, followUser, getFollowing, getFollowers, deleteFollower } from "../../Api/Follow/Follow";
 import UserListModalDialog from "../Dialog/UserListModalDialog";
+import AvatarUser from "../Avatar/AvatarUser";
+import { Link } from "react-router-dom";
 
 
 
@@ -110,22 +112,24 @@ const ProfileHeader = ({ userProfile }) => {
             <Container
                 maxWidth="md"
                 disableGutters
-                sx={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "0 10rem" }}
+                sx={{ width: "100%", display: "flex", alignItems: "center", gap: 5, padding: "0 10rem" }}
             >
                 <AvatarGroup>
-                    <Avatar
-                        src={userProfile?.profilePicURL || "https://fakeimg.pl/440x320/?text=Image1"}
-                        alt="User Profile"
-                        sx={{ width: 150, height: 150 }}
+                    <AvatarUser
+                        profilePicURL={userProfile?.user?.profilePicture} size={150}
                     />
                 </AvatarGroup>
                 <Stack spacing={2} sx={{ width: "100%", maxWidth: 400 }}>
                     <Box display="flex" alignItems="center" gap={2}>
-                        <Typography variant="h6">{userProfile?.firstName} {userProfile?.lastName}</Typography>
+                        <Typography variant="body1" fontWeight="bold" padding="0px 8px" margin="0">
+                            {userProfile?.user?.firstName} {userProfile?.user?.lastName}
+                        </Typography>
                         {visitingOwnProfileAndAuth && (
-                            <Button variant="outlined" size="small" onClick={() => setIsOpen(true)}>
-                                Edit Profile
-                            </Button>
+                            <Link to={`/accounts/edit`} >
+                                <Button variant="outlined" size="small" onClick={() => setIsOpen(true)}>
+                                    Edit Profile
+                                </Button>
+                            </Link>
                         )}
                         {visitingAnotherProfileAndAuth && (
                             <Button
@@ -143,21 +147,21 @@ const ProfileHeader = ({ userProfile }) => {
                         <Button sx={{ color: 'black' }}><Typography variant="body2"><strong>{userProfile?.postCount || 0}</strong> Posts</Typography></Button>
                         <Button
                             sx={{ color: 'black' }}
-                            onClick={handleOpenFollowers} // Mở modal trước, sau đó fetch
+                            onClick={handleOpenFollowers}
                             disabled={loadingFollowers}
                         >
                             {loadingFollowers ? <CircularProgress size={20} /> : <Typography variant="body2"><strong>{userProfile?.followerCount || 0}</strong> Followers</Typography>}
                         </Button>
                         <Button
                             sx={{ color: 'black' }}
-                            onClick={handleOpenFollowing} // Mở modal trước, sau đó fetch
+                            onClick={handleOpenFollowing}
                             disabled={loadingFollowing}
                         >
                             {loadingFollowing ? <CircularProgress size={20} /> : <Typography variant="body2"><strong>{userProfile?.followingCount || 0}</strong> Following</Typography>}
                         </Button>
                     </Box>
-                    <Typography variant="body1" fontWeight="bold" padding="0px 8px" margin="0">
-                        {userProfile?.user?.firstName} {userProfile?.user?.lastName}
+                    <Typography variant="body1" padding="0px 8px" margin="0">
+                        {userProfile?.user?.bio}
                     </Typography>
                 </Stack>
                 <Dialog open={isOpen} onClose={() => setIsOpen(false)}>

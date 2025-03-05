@@ -13,6 +13,7 @@ import CollectionPage from "./Page/CollectionPage"
 import PostDetailPage from "./Page/PostDetailPage";
 import ChatInterfacePage from "./Page/ChatInterfacePage";
 import { ChatProvider } from "./Contexts/ChatContext";
+import EditProfile from "./Page/EditProfile";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
                 <Route index element={<ProfilePosts />} />
                 <Route path="saved" element={<SavedPost />} />
               </Route>
+              <Route path="/accounts/edit" element={<EditProfile />} />
               <Route path="/profile/:userId/saved/all-posts" element={<SavedPostPage />} />
               <Route path="/profile/:userId/saved/:collectionName/:collectionId" element={<CollectionPage />} />
               <Route path="/post/:postId" element={<PostDetailPage />} />

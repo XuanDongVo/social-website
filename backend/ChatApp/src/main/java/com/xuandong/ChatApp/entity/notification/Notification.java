@@ -29,7 +29,6 @@ public class Notification {
     @JoinColumn(name = "receiver_id", nullable = false)
     private User receiver; // Người nhận thông báo
 
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private NotificationStatus status = NotificationStatus.UNREAD; // UNREAD, READ

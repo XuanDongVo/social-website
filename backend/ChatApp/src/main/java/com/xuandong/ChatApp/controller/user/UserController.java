@@ -2,17 +2,12 @@ package com.xuandong.ChatApp.controller.user;
 
 import java.util.List;
 
+import com.xuandong.ChatApp.dto.request.EditProfileRequest;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.xuandong.ChatApp.dto.request.LoginRequest;
 import com.xuandong.ChatApp.dto.request.RegisterRequest;
@@ -28,16 +23,33 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserController {
 
-	private final UserService userService;
+    private final UserService userService;
 
-//	@GetMapping
-//	public ResponseEntity<List<UserResponse>> getAllUsers(@RequestParam(name = "id")  String userId) {
-//		return ResponseEntity.ok(userService.getAllUsersExceptSelf(userId));
-//	}
-	
-	@GetMapping("/profile")
-	public ResponseEntity<ProfileResponse> getProfileUser(@RequestParam("id") String userId){
-		return ResponseEntity.ok(userService.getProfileUser(userId));
+    @GetMapping("/profile")
+    public ResponseEntity<ProfileResponse> getProfileUser(@RequestParam("id") String userId) {
+        return ResponseEntity.ok(userService.getProfileUser(userId));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<UserResponse>> searchUser(@RequestParam("search") String keyword) {
+        List<UserResponse> users = userService.searchUser(keyword);
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> findUserById(@PathVariable("id") String userId) {
+        return ResponseEntity.ok(userService.findById(userId));
+    }
+
+    @PostMapping("/account/update")
+    @ResponseStatus(HttpStatus.OK)
+    public void updateProfile(@RequestBody EditProfileRequest editProfileRequest) {
+        userService.editProfile(editProfileRequest);
+    }
+
+	@PatchMapping("/account/picture")
+	public void changProfilePicture(@RequestParam("urlImage") String profilePicture , @RequestParam("id") String userId) {
+		userService.changeProfilePicture(profilePicture, userId);
 	}
 
 

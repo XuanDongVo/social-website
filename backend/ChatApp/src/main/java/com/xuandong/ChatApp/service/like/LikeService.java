@@ -39,13 +39,18 @@ public class LikeService {
 
 		if (currentLike.isPresent()) {
 			likeRepository.delete(currentLike.get());
+			notificationService.deleteLikePostNotification(user, post.getUser(), post);
 			return false;
 		} else {
 			Like like = new Like();
 			like.setUser(user);
 			like.setPost(post);
 			likeRepository.save(like);
-			notificationService.sendLikePostNotification(user, post.getUser(), post);
+			// Không thông báo khi người đăng bài tự like bài
+			if(!user.getId().equals(post.getUser().getId())) {
+				notificationService.sendLikePostNotification(user, post.getUser(), post);
+			}
+
 			return true;
 		}
 	}

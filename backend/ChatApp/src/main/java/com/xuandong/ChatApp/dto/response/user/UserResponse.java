@@ -21,6 +21,8 @@ public class UserResponse {
 	private String firstName;
 	private String lastName;
 	private String email;
+	private String profilePicture;
+	private String bio;
 	private LocalDateTime lastSeen;
 	private boolean isOnline;
 	private List<StoryResponse> stories;
